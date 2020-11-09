@@ -1,27 +1,27 @@
 package com.sudipacharya.nebclass11physics;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ArrayAdapter;
-
+import android.widget.ImageView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.facebook.ads.AudienceNetworkAds;
 import com.facebook.ads.InterstitialAd;
-import com.koushikdutta.async.future.FutureCallback;
-import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 
 public class Webview extends AppCompatActivity {
 
-    DatabaseHelper databaseHelper;
-    ArrayList arrayList;
-    ArrayAdapter arrayAdapter;
-    WebView webview;
-private InterstitialAd interstitialAd;
+    WebView webView;
+    private InterstitialAd interstitialAd;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,44 +31,43 @@ private InterstitialAd interstitialAd;
         interstitialAd = new InterstitialAd(this, "644457569507808_644477762839122");
         interstitialAd.loadAd();
 
-
         Intent intent = getIntent();
         String easyPuzzle = intent.getExtras().getString("epuzzle");
-String titleweb = intent.getExtras().getString("title");
+        String titleweb = intent.getExtras().getString("title");
 
 
         getSupportActionBar().setTitle(titleweb);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
-        databaseHelper = new DatabaseHelper(Webview.this);
-        arrayList = databaseHelper.getAllText();
-
-
-        webview = (WebView)this.findViewById(R.id.webview);
-        webview.getSettings().setJavaScriptEnabled(true);
-        webview.getSettings().setLoadWithOverviewMode(true);
-        webview.getSettings().setBuiltInZoomControls(true);
-        // final TextView txtview = findViewById(R.id.txtxx);
-
-
-        Ion.with(getApplicationContext()).load(easyPuzzle).asString().setCallback(new FutureCallback<String>() {
+        webView = (WebView) this.findViewById(R.id.webview);
+        webView.getSettings().setAppCacheEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setAllowFileAccess(true);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setAppCachePath(Webview.this.getCacheDir().getPath());
+        webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        webView.setWebViewClient(new WebViewClient());
+        webView.loadUrl(easyPuzzle);
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
+        webView.getSettings().setSupportZoom(true);
+        webView.getSettings().setBuiltInZoomControls(true);
+        webView.getSettings().setDisplayZoomControls(false);
+        webView.setWebViewClient(new WebViewClient(){
             @Override
-            public void onCompleted(Exception e, String result) {
+            public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error){
+                //Your code to do
+                ImageView imageView = findViewById(R.id.noconnect);
 
-                arrayList.clear();
-                arrayList.add(databaseHelper.getAllText());
-                WebSettings webSettings = webview.getSettings();
-                webSettings.setDefaultTextEncodingName("utf-8");
-                webview.loadDataWithBaseURL("", result, "text/html", "utf-8", "");
-
-
-
+                imageView.setVisibility(View.VISIBLE);
+                Toast.makeText(Webview.this, "!!!Problem in Your Internet Connection!! " , Toast.LENGTH_LONG).show();
             }
         });
 
-
     }
+
+
+
     @Override
     public void onBackPressed() {
         if (interstitialAd.isAdLoaded()){
